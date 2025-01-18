@@ -19,12 +19,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 add_subdirectory( glfw )
 
-option( GLFW-CMAKE-STARTER-USE-GLFW-GLAD "Use GLAD from GLFW" ON )
 
-if( GLFW-CMAKE-STARTER-USE-GLFW-GLAD )
-    include_directories("${GLFW_SOURCE_DIR}/deps")
-    set( GLAD_GL "${GLFW_SOURCE_DIR}/deps/glad/gl.h" )
-endif()
 
 if( MSVC )
     SET( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} /ENTRY:mainCRTStartup" )
