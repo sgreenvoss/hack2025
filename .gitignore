@@ -1,0 +1,48 @@
+﻿# Build artifacts
+/build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# Compiled binaries
+*.o
+*.obj
+*.so
+*.dll
+*.dylib
+*.lib
+*.exe
+
+# Debug files
+*.log
+*.pch
+*.pdb
+*.ilk
+
+# Windows-specific
+*.sln
+*.vcxproj
+*.vcxproj.*
+*.ncb
+*.suo
+*.user
+*.filters
+Debug/
+Release/
+x64/
+
+# macOS-specific
+.DS_Store
+.AppleDouble
+._*
+
+# Linux-specific
+*.swp
+*~
+
+# IDE-specific
+.vscode/
+.idea/
+*.xcworkspace
+*.xcuserstate
