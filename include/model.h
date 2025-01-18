@@ -3,9 +3,9 @@
 #include <math.h>
 
 
-#define MIN_MAX_Z 10
-#define MIN_MAX_Z 10
-#define MIN_MAX_X 10
+#define MAX_Z 10
+#define MAX_Y 10
+#define MAX_X 10
 
 #ifndef RES
 #define RES 100
@@ -14,8 +14,8 @@
 
 // Vertex Struct
 typedef struct Vertex {
-    int x;
-    int y;
-    int z;
+    float x;
+    float y;
+    float z;
 } v;
 
