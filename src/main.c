@@ -1,158 +1,257 @@
-#include <stdio.h>
+#define GL_SILENCE_DEPRECATION
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "ftest.h"
-// Callback functions
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+#include <stdbool.h>
+#include <stdio.h>
+#include <math.h>
+
+// Function declarations
+unsigned int create_shader_program();
 void processInput(GLFWwindow* window);
 
-// settings
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+// Shader compilation and error checking
+void check_shader_compile(unsigned int shader);
+void check_program_link(unsigned int program);
 
-const char* vertexShaderSource = "#version 330 core\n"
-"layout (location = 0) in vec3 aPos;\n"
-"void main()\n"
-"{\n"
-"   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
-"}\0";
-
-const char* fragmentShaderSource = "#version 330 core\n"
-"out vec4 FragColor;\n"
-"void main()\n"
-"{\n"
-"   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
-"}\n\0";
+// Utility functions for matrix operations
+void translate(float* matrix, float x, float y, float z);
+void perspective(float* matrix, float fov, float aspect, float near, float far);
+void multiply_matrix(float* result, float* mat1, float* mat2);
+void load_identity(float* matrix);
+void transpose_matrix(float* matrix);
 
 int main() {
     // Initialize GLFW
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    if (!glfwInit()) {
+        return -1;
+    }
 
-#ifdef __APPLE__
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-    // Create a GLFW window
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
-    if (window == NULL) {
-        fprintf(stderr, "Failed to create GLFW window\n");
+    // Create a windowed mode window and its OpenGL context
+    GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL", NULL, NULL);
+    if (!window) {
         glfwTerminate();
         return -1;
     }
+
+    // Make the window's context current
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 
-    // Load OpenGL function pointers using GLAD
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-        fprintf(stderr, "Failed to initialize GLAD\n");
-        return -1;
-    }
+    // Create and use shader program
+    unsigned int shaderProgram = create_shader_program();
+    glUseProgram(shaderProgram);
 
-    // Build and compile shader program
-    // Vertex Shader
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-    glCompileShader(vertexShader);
-
-    // Check for vertex shader compile errors
-    int success;
-    char infoLog[512];
-    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        fprintf(stderr, "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n%s\n", infoLog);
-    }
-
-    // Fragment Shader
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-    glCompileShader(fragmentShader);
-
-    // Check for fragment shader compile errors
-    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        fprintf(stderr, "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s\n", infoLog);
-    }
-
-    // Link shaders
-    unsigned int shaderProgram = glCreateProgram();
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-
-    // Check for linking errors
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-        fprintf(stderr, "ERROR::SHADER::PROGRAM::LINKING_FAILED\n%s\n", infoLog);
-    }
-
-    // Delete the shader objects once linked
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
-
-    // Set up vertex data and buffers
+    // Define vertices and indices for a cube
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f, // left  
-         0.5f, -0.5f, 0.0f, // right 
-         0.0f,  0.5f, 0.0f  // top   
+        // Positions         // Colors
+        -0.5f, -0.5f, -0.5f,  1.0f, 0.0f, 0.0f, // Front Bottom Left
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f, 0.0f, // Front Bottom Right
+         0.5f,  0.5f, -0.5f,  0.0f, 0.0f, 1.0f, // Front Top Right
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f, 0.0f, // Front Top Left
+        -0.5f, -0.5f,  0.5f,  1.0f, 0.0f, 1.0f, // Back Bottom Left
+         0.5f, -0.5f,  0.5f,  0.0f, 1.0f, 1.0f, // Back Bottom Right
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f, 1.0f, // Back Top Right
+        -0.5f,  0.5f,  0.5f,  0.5f, 0.5f, 0.5f  // Back Top Left
     };
 
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
+    unsigned int indices[] = {
+        // Front
+        0, 1, 2, 2, 3, 0,
+        // Back
+        4, 5, 6, 6, 7, 4,
+        // Left
+        0, 4, 7, 7, 3, 0,
+        // Right
+        1, 5, 6, 6, 2, 1,
+        // Top
+        3, 2, 6, 6, 7, 3,
+        // Bottom
+        0, 1, 5, 5, 4, 0
+    };
+
+    unsigned int VBO, VAO, EBO;
     glGenBuffers(1, &VBO);
+    glGenBuffers(1, &EBO);
+    glGenVertexArrays(1, &VAO);
 
     glBindVertexArray(VAO);
 
+    // VBO
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    // EBO
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // Position attribute
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+
+    // Color attribute
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
 
-    // Render loop
+    // Set up transformation matrices (model, view, projection)
+    float model[16], view[16], projection[16];
+    load_identity(model);
+    load_identity(view);
+    load_identity(projection);
+
+    // Apply view transformation
+    translate(view, 0.0f, 0.0f, -5.0f);
+
+    // Apply projection transformation
+    perspective(projection, 45.0f, 800.0f / 600.0f, 0.1f, 100.0f);
+
+    // Main loop
     while (!glfwWindowShouldClose(window)) {
-        // Input
-        processInput(window);
+        processInput(window); // Handle input
 
         // Render
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
 
-        // Draw triangle
-        glUseProgram(shaderProgram);
         glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
 
-        // Swap buffers and poll events
+        // Set the transformation matrices for the shader
+        unsigned int modelLoc = glGetUniformLocation(shaderProgram, "model");
+        unsigned int viewLoc = glGetUniformLocation(shaderProgram, "view");
+        unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
+
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, model);
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, view);
+        glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, projection);
+
+        // Render the cube
+        glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+
+        // Swap buffers
         glfwSwapBuffers(window);
+
+        // Poll for events
         glfwPollEvents();
     }
 
-    // Cleanup resources
+    // Clean up
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
-    glDeleteProgram(shaderProgram);
+    glDeleteBuffers(1, &EBO);
 
-    // Terminate GLFW
     glfwTerminate();
     return 0;
 }
 
-// Process all input
-void processInput(GLFWwindow* window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, 1);
+unsigned int create_shader_program() {
+    // Vertex Shader source code
+    const char* vertexShaderSource = R"(
+    #version 330 core
+    layout (location = 0) in vec3 aPos;
+    layout (location = 1) in vec3 aColor;
+    uniform mat4 model;
+    uniform mat4 view;
+    uniform mat4 projection;
+    out vec3 ourColor;
+    void main()
+    {
+        gl_Position = projection * view * model * vec4(aPos, 1.0f);
+        ourColor = aColor;
+    })";
+
+    // Fragment Shader source code
+    const char* fragmentShaderSource = R"(
+    #version 330 core
+    in vec3 ourColor;
+    out vec4 FragColor;
+    void main()
+    {
+        FragColor = vec4(ourColor, 1.0f);
+    })";
+
+    // Compile shaders and create program
+    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+    glCompileShader(vertexShader);
+    check_shader_compile(vertexShader);
+
+    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+    glCompileShader(fragmentShader);
+    check_shader_compile(fragmentShader);
+
+    unsigned int shaderProgram = glCreateProgram();
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+    check_program_link(shaderProgram);
+
+    // Clean up shaders
+    glDeleteShader(vertexShader);
+    glDeleteShader(fragmentShader);
+
+    return shaderProgram;
 }
 
-// Callback for resizing the window
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
+void check_shader_compile(unsigned int shader) {
+    int success;
+    char infoLog[512];
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(shader, 512, NULL, infoLog);
+        printf("Shader compilation failed\n%s\n", infoLog);
+    }
+}
+
+void check_program_link(unsigned int program) {
+    int success;
+    char infoLog[512];
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(program, 512, NULL, infoLog);
+        printf("Program linking failed\n%s\n", infoLog);
+    }
+}
+
+void processInput(GLFWwindow* window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
+// Utility functions for matrix operations
+
+void load_identity(float* matrix) {
+    for (int i = 0; i < 16; i++) {
+        matrix[i] = (i % 5 == 0) ? 1.0f : 0.0f;
+    }
+}
+
+void translate(float* matrix, float x, float y, float z) {
+    load_identity(matrix);
+    matrix[12] = x;
+    matrix[13] = y;
+    matrix[14] = z;
+}
+
+void perspective(float* matrix, float fov, float aspect, float near, float far) {
+    float tanHalfFovy = tanf(fov / 2.0f);
+    matrix[0] = 1.0f / (aspect * tanHalfFovy);
+    matrix[5] = 1.0f / tanHalfFovy;
+    matrix[10] = -(far + near) / (far - near);
+    matrix[11] = -1.0f;
+    matrix[14] = -(2.0f * far * near) / (far - near);
+    matrix[15] = 0.0f;
+}
+
+void multiply_matrix(float* result, float* mat1, float* mat2) {
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            result[i * 4 + j] = 0;
+            for (int k = 0; k < 4; k++) {
+                result[i * 4 + j] += mat1[i * 4 + k] * mat2[k * 4 + j];
+            }
+        }
+    }
 }
