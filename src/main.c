@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include <math.h>
 
+// woo I love C 
+int i = 2;
+
 // Function declarations
 unsigned int create_shader_program();
 void processInput(GLFWwindow* window);
