@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <math.h>
+#include "model.c"
 
 // woo I love C 
 int i = 2;
@@ -205,7 +206,6 @@ void check_shader_compile(unsigned int shader) {
         printf("Shader compilation failed\n%s\n", infoLog);
     }
 }
-
 void check_program_link(unsigned int program) {
     int success;
     char infoLog[512];

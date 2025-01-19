@@ -1,13 +1,21 @@
-// model.h
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
 
-#ifndef MODEL_H
-#define MODEL_H
 
-typedef struct {
-    float x, y, z;
+#define MAX_Z 10
+#define MAX_Y 10
+#define MAX_X 10
+
+#ifndef RES
+#define RES 100
+#endif
+
+
+// Vertex Struct
+typedef struct Vertex {
+    float x;
+    float y;
+    float z;
 } v;
 
-void check_shader_compile(unsigned int shader);
-void check_program_link(unsigned int program);
-
-#endif // MODEL_H aksjhfdajshdfbkjasdhf
