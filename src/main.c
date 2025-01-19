@@ -148,7 +148,8 @@ int main() {
 
 unsigned int create_shader_program() {
     // Vertex Shader source code
-    const char* vertexShaderSource = R"(
+    const char* vertexShaderSource = 
+    "\n(
     #version 330 core
     layout (location = 0) in vec3 aPos;
     layout (location = 1) in vec3 aColor;
