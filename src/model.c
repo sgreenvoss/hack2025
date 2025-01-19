@@ -1,8 +1,10 @@
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-#include <stdio.h>
+// #define YSTART -10
+// #define YEND 10
+// #define XSTART -10
+// #define XEND 10
+// #define GRID_RES 0.1
+#include "model.h"
 
-<<<<<<< HEAD
 
 
 
@@ -11,7 +13,7 @@
 float * GenerateGrid()
 {
     //MALLOC #of vertices in Grid 
-    float * Grid = (float *)malloc(sizeof(float) * ((2*MAX_X)*(2*MAX_Y)/RES)*3);
+    float * Grid = (float *)malloc(sizeof(float) * (NUM_PTS*3);
     float * index = Grid;
     for (float i=-MAX_X; i < MAX_X+RES; i+=RES)
     {
@@ -28,7 +30,7 @@ float * GenerateGrid()
     return Grid;
 }
 
-void applyParaboloid(float** gridptr, int a, int b, int c)
+void applyParaboloid(float** gridptr, int a, int b, int c, float *z_max)
 {
     /*
     Applies the function: 
@@ -36,8 +38,10 @@ void applyParaboloid(float** gridptr, int a, int b, int c)
     to each point in the grid
     */
     float *grid = *gridptr; // Dereference pointer to grid
+
+    float max = 0.0f;
     
-    for(int i=0; i<(((2*MAX_X)*(2*MAX_Y)/RES)*3)+1; i++) { //FIXME
+    for(int i=0; i<(NUM_PTS+1); i++) { //FIXME
         /* Calculates the z value for each (x,y) pair in grid */
         float x = *grid;
         grid++;
@@ -45,8 +49,13 @@ void applyParaboloid(float** gridptr, int a, int b, int c)
         grid++;
         //Apply function to (x,y) values
         *grid = c * ((pow(x, 2)*pow(a, 2)) * (pow(y, 2)*pow(b, 2)));
+        if *grid > max
+        {
+            max = *grid;
+        }
         grid++;
     }
+    *z_max = max;
 }
 
 void normalize(float **gridptr)
@@ -58,7 +67,8 @@ void normalize(float **gridptr)
 int main()
 {
     float* tmp = GenerateGrid();
-    applyParaboloid(&tmp, 1, 4, 4);
+    float z_max;
+    applyParaboloid(&tmp, 1, 4, 4, &z_max);
 
     for (int i=0; i<=20; i++)
     {
@@ -78,24 +88,5 @@ int main()
             tmp++;
         }
         printf("\n");
-=======
-void check_shader_compile(unsigned int shader) {
-    int success;
-    char infoLog[512];
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(shader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::COMPILATION_FAILED\n%s\n", infoLog);
-    }
-}
-
-void check_program_link(unsigned int program) {
-    int success;
-    char infoLog[512];
-    glGetProgramiv(program, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(program, 512, NULL, infoLog);
-        printf("ERROR::PROGRAM::LINKING_FAILED\n%s\n", infoLog);
->>>>>>> fe26d4bcc59e602356c00360a7d8fe3f62f9ed7f
     }
 }
