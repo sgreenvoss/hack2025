@@ -1,10 +1,8 @@
-// #define YSTART -10
-// #define YEND 10
-// #define XSTART -10
-// #define XEND 10
-// #define GRID_RES 0.1
-#include "model.h"
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+#include <stdio.h>
 
+<<<<<<< HEAD
 
 
 
@@ -80,5 +78,24 @@ int main()
             tmp++;
         }
         printf("\n");
+=======
+void check_shader_compile(unsigned int shader) {
+    int success;
+    char infoLog[512];
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(shader, 512, NULL, infoLog);
+        printf("ERROR::SHADER::COMPILATION_FAILED\n%s\n", infoLog);
+    }
+}
+
+void check_program_link(unsigned int program) {
+    int success;
+    char infoLog[512];
+    glGetProgramiv(program, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(program, 512, NULL, infoLog);
+        printf("ERROR::PROGRAM::LINKING_FAILED\n%s\n", infoLog);
+>>>>>>> fe26d4bcc59e602356c00360a7d8fe3f62f9ed7f
     }
 }

@@ -3,14 +3,14 @@
 #include <math.h>
 
 
-#define MAX_Z 1
-#define MAX_Y 1
-#define MAX_X 1
-
+#define MAX_Z 10
+#define MAX_Y 10
+#define MAX_X 10
 #ifndef RES
-#define RES .1
+#define RES 0.1
 #endif
 
+#define NUM_PTS ((2*MAX_X)*(2*MAX_Y)/RES)   //Size of buffer for (x,y,z) object
 
 // Vertex Struct
 typedef struct Vertex {
