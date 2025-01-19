@@ -33,14 +33,19 @@ float * GenerateGrid()
 void applyParaboloid(float** gridptr, int a, int b, int c)
 {
     /*
-    Applies the z/c = (x^2 / a^2) + (y^2 / b^2)*/
-    float *grid = *gridptr;
-    for(int i=0; i<401; i++) { //FIXME
+    Applies the function: 
+        z/c = (x^2 / a^2) + (y^2 / b^2)
+    to each point in the grid
+    */
+    float *grid = *gridptr; // Dereference pointer to grid
+    
+    for(int i=0; i<(((2*MAX_X)*(2*MAX_Y)/RES)*3)+1; i++) { //FIXME
+        /* Calculates the z value for each (x,y) pair in grid */
         float x = *grid;
         grid++;
         float y = *grid;
         grid++;
-
+        //Apply function to (x,y) values
         *grid = c * ((pow(x, 2)*pow(a, 2)) * (pow(y, 2)*pow(b, 2)));
         grid++;
     }
@@ -48,7 +53,7 @@ void applyParaboloid(float** gridptr, int a, int b, int c)
 
 void normalize(float **gridptr)
 {
-    
+
 }
 //void ** GeneratePoints(xStart, xEnd, xRes, yStart, yEnd, yRes, void *
 
