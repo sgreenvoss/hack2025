@@ -148,27 +148,29 @@ int main() {
 
 unsigned int create_shader_program() {
     // Vertex Shader source code
-    const char* vertexShaderSource = "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "layout (location = 1) in vec3 aColor;\n"
-    "uniform mat4 model;\n"
-    "uniform mat4 view;\n"
-    "uniform mat4 projection;\n"
-    "out vec3 ourColor;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = projection * view * model * vec4(aPos, 1.0f);\n"
-    "   ourColor = aColor;\n"
-    "}\0";
+    const char* vertexShaderSource = R"(
+    #version 330 core
+    layout (location = 0) in vec3 aPos;
+    layout (location = 1) in vec3 aColor;
+    uniform mat4 model;
+    uniform mat4 view;
+    uniform mat4 projection;
+    out vec3 ourColor;
+    void main()
+    {
+        gl_Position = projection * view * model * vec4(aPos, 1.0f);
+        ourColor = aColor;
+    })";
 
     // Fragment Shader source code
-    const char* fragmentShaderSource = "#version 330 core\n"
-    "in vec3 ourColor;\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "    FragColor = vec4(ourColor, 1.0f);\n"
-    "}\n\0";
+    const char* fragmentShaderSource = R"(
+    #version 330 core
+    in vec3 ourColor;
+    out vec4 FragColor;
+    void main()
+    {
+        FragColor = vec4(ourColor, 1.0f);
+    })";
 
     // Compile shaders and create program
     unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
